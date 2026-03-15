@@ -28,6 +28,7 @@
   --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
   --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
   --cols:5;
+  --tile-bw:1.5px;
 }
 /* Light mode */
 body.light {
@@ -65,9 +66,9 @@ body.light .s-dn-di .t-name { color:rgba(0,96,64,.50); }
 body.light .s-dn-co .t-type, body.light .s-dn-es .t-type, body.light .s-dn-di .t-type { color:var(--text3); }
 /* ── Tiles: tomorrow (ro) — color bg, slight dim ── */
 body.light .s-ro { background:var(--bg3); }
-body.light .s-ro-co { background:var(--co-bg); border:1.5px dashed var(--co-bd); }
-body.light .s-ro-es { background:var(--es-bg); border:1.5px dashed var(--es-bd); }
-body.light .s-ro-di { background:var(--di-bg); border:1.5px dashed var(--di-bd); }
+body.light .s-ro-co { background:var(--co-bg); border:var(--tile-bw) dashed var(--co-bd); }
+body.light .s-ro-es { background:var(--es-bg); border:var(--tile-bw) dashed var(--es-bd); }
+body.light .s-ro-di { background:var(--di-bg); border:var(--tile-bw) dashed var(--di-bd); }
 body.light .s-ro-co .t-name { color:var(--co); }
 body.light .s-ro-es .t-name { color:var(--es); }
 body.light .s-ro-di .t-name { color:var(--di); }
@@ -188,16 +189,16 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
 .tile.pressing { transform:scale(0.90); filter:brightness(1.2); }
 
 /* skins */
-.s-co { background:var(--co-bg); border:1.5px solid var(--co-bd); }
-.s-es { background:var(--es-bg); border:1.5px solid var(--es-bd); }
-.s-di { background:var(--di-bg); border:1.5px solid var(--di-bd); }
+.s-co { background:var(--co-bg); border:var(--tile-bw) solid var(--co-bd); }
+.s-es { background:var(--es-bg); border:var(--tile-bw) solid var(--es-bd); }
+.s-di { background:var(--di-bg); border:var(--tile-bw) solid var(--di-bd); }
 .s-dn-co { background:#1e1e1e; border:1.5px solid var(--co-bd); }
 .s-dn-es { background:#1e1e1e; border:1.5px solid var(--es-bd); }
 .s-dn-di { background:#1e1e1e; border:1.5px solid var(--di-bd); }
 .s-ro { background:var(--bg3);   border:1.5px solid var(--border); }
-.s-ro-co { background:var(--co-bg); border:1.5px dashed var(--co-bd); }
-.s-ro-es { background:var(--es-bg); border:1.5px dashed var(--es-bd); }
-.s-ro-di { background:var(--di-bg); border:1.5px dashed var(--di-bd); }
+.s-ro-co { background:var(--co-bg); border:var(--tile-bw) dashed var(--co-bd); }
+.s-ro-es { background:var(--es-bg); border:var(--tile-bw) dashed var(--es-bd); }
+.s-ro-di { background:var(--di-bg); border:var(--tile-bw) dashed var(--di-bd); }
 .s-li { background:var(--bg3);   border:1.5px solid var(--border2); opacity:1; cursor:default; }
 
 .t-top { display:flex; align-items:flex-start; justify-content:flex-start; margin-bottom:8px; }
@@ -544,6 +545,14 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
     <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:20px;">
       <span>Pequeño</span><span>Normal</span><span>Grande</span><span>Muy grande</span>
     </div>
+    <div style="height:1px;background:var(--border);margin-bottom:16px;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);">Bordes gruesos</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">Resalta más las habitaciones pendientes</div>
+      </div>
+      <div class="tsw" id="thick-toggle" onclick="toggleThickBorder()"><div class="tsw-k"></div></div>
+    </div>
   </div>
   <div class="modal-foot">
     <button class="modal-btn-sec" onclick="closeFontModal()">Cancelar</button>
@@ -588,6 +597,7 @@ const S = {
   lightMode: localStorage.getItem('cl_light') === '1',
   cols: parseInt(localStorage.getItem('cl_cols') || '5'),
   fontSize: parseInt(localStorage.getItem('cl_font') || '2'), // 1=small 2=normal 3=large 4=xlarge
+  thickBorder: localStorage.getItem('cl_thick') === '1',
 };
 
 // ── Date utils ───────────────────────────────────────────
@@ -682,6 +692,7 @@ function showApp() {
   app.classList.add('visible');
   applyCols();
   applyFontSize();
+  applyThickBorder();
   applyTheme();
   renderAll();
     initRT();
@@ -1205,6 +1216,7 @@ function setCols(n) {
   localStorage.setItem('cl_cols', n);
   applyCols();
   applyFontSize();
+  applyThickBorder();
   applyTheme();
   renderAll();
   document.querySelectorAll('.col-opt').forEach(el => {
@@ -1226,6 +1238,18 @@ function toggleTheme() {
   S.lightMode = !S.lightMode;
   localStorage.setItem('cl_light', S.lightMode ? '1' : '0');
   applyTheme();
+}
+
+function applyThickBorder() {
+  document.documentElement.style.setProperty('--tile-bw', S.thickBorder ? '3.5px' : '1.5px');
+  const tog = document.getElementById('thick-toggle');
+  if (tog) tog.classList.toggle('on', S.thickBorder);
+}
+
+function toggleThickBorder() {
+  S.thickBorder = !S.thickBorder;
+  localStorage.setItem('cl_thick', S.thickBorder ? '1' : '0');
+  applyThickBorder();
 }
 
 function applyFontSize() {
@@ -1252,6 +1276,8 @@ function openFontModal() {
   const slider = document.getElementById('font-slider');
   if (slider) slider.value = S.fontSize;
   openModal('font-ov','font-box');
+  // Init thick toggle state after modal opens
+  requestAnimationFrame(() => applyThickBorder());
 }
 function closeFontModal() {
   // Revert preview if cancelled
