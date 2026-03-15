@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Limpieza"/>
+<meta name="theme-color" content="#0f0f0f"/>
+<title>Limpieza</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg:#0f0f0f; --bg2:#181818; --bg3:#232323; --bg4:#2c2c2c;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.15);
+  --text:#efefef; --text2:#7a7a7a; --text3:#555;
+  --accent:#c8f060;
+  --co:#ff9f43; --co-bg:rgba(255,159,67,.16); --co-bd:rgba(255,159,67,.32);
+  --es:#a29bfe; --es-bg:rgba(162,155,254,.16); --es-bd:rgba(162,155,254,.32);
+  --di:#55efc4; --di-bg:rgba(85,239,196,.13); --di-bd:rgba(85,239,196,.28);
+  --danger:#ff6b6b;
+  --r:16px; --r-sm:11px; --r-xs:8px;
+  --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+  --cols:5;
+}
+/* Light mode */
+body.light {
+  --bg:#f5f5f7; --bg2:#ffffff; --bg3:#ebebed; --bg4:#dcdcdf;
+  --border:rgba(0,0,0,0.09); --border2:rgba(0,0,0,0.18);
+  --text:#111111; --text2:#666666; --text3:#aaaaaa;
+  --co-bg:rgba(255,159,67,.14); --co-bd:rgba(255,159,67,.35);
+  --es-bg:rgba(120,110,220,.12); --es-bd:rgba(120,110,220,.32);
+  --di-bg:rgba(0,180,140,.11); --di-bd:rgba(0,180,140,.30);
+}
+body.light .s-co .t-name { color:#c07020; }
+body.light .s-es .t-name { color:#6050b0; }
+body.light .s-di .t-name { color:#00806a; }
+body.light .s-co .t-type { color:rgba(180,100,20,.85); }
+body.light .s-es .t-type { color:rgba(100,80,180,.85); }
+body.light .s-di .t-type { color:rgba(0,130,100,.85); }
+body.light .s-li { background:#e8e8ea; border-color:rgba(0,0,0,.12); }
+body.light .s-dn-co { background:#f5f5f7; border-color:var(--co-bd); }
+body.light .s-dn-es { background:#f5f5f7; border-color:var(--es-bd); }
+body.light .s-dn-di { background:#f5f5f7; border-color:var(--di-bd); }
+body.light .s-dn-co .t-name { color:rgba(180,100,20,.5); }
+body.light .s-dn-es .t-name { color:rgba(100,80,180,.5); }
+body.light .s-dn-di .t-name { color:rgba(0,130,100,.45); }
+body.light .s-dn-co .t-type, body.light .s-dn-es .t-type, body.light .s-dn-di .t-type { color:var(--text2); }
+body.light .s-ro { background:var(--bg3); }
+body.light .s-ro-co { background:var(--bg3); border-color:var(--co-bd); opacity:0.65; }
+body.light .s-ro-es { background:var(--bg3); border-color:var(--es-bd); opacity:0.65; }
+body.light .s-ro-di { background:var(--bg3); border-color:var(--di-bd); opacity:0.65; }
+body.light .pin-logo { background:#b8e040; }
+body.light .t-chk { border-color:rgba(0,0,0,.15); background:rgba(0,0,0,.04); }
+body.light .t-chk.on { background:var(--accent); border-color:var(--accent); }
+body.light .t-chk svg { stroke:rgba(0,0,0,.25); }
+body.light .t-chk.on svg { stroke:#0f0f0f; }
+body.light .spinner { border-color:rgba(0,0,0,.1); border-top-color:#666; }
+body.light .day-tab { background:var(--bg3); color:var(--text2); }
+body.light .day-tab.active { background:#333; color:#fff; border-color:#333; }
+body.light .menu-btn { background:var(--bg3); }
+body.light .bsheet { background:var(--bg2); }
+body.light .sh-act:active { background:var(--bg3); }
+body.light .m-dr { background:var(--bg2); border-left-color:var(--border); }
+body.light .modal-box { background:var(--bg2); }
+body.light .pin-screen-bg { background:var(--bg); }
+body.light #pin-screen { background:var(--bg); }
+body.light #pin-screen h1 { color:#111; }
+body.light #pin-screen p { color:#666; }
+body.light .pin-key { background:var(--bg3); color:#111; }
+body.light .pin-key:active { background:var(--bg4); }
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; background:var(--bg); color:var(--text); font-family:var(--font); overflow:hidden; -webkit-font-smoothing:antialiased; }
+
+/* Loading */
+#loading { position:fixed; inset:0; z-index:200; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+#loading.hidden { display:none; }
+.spinner { width:34px; height:34px; border:2.5px solid var(--bg3); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+.loading-text { font-size:13px; color:var(--text2); }
+
+/* PIN */
+#pin-screen { position:fixed; inset:0; z-index:100; background:var(--bg); display:none; flex-direction:column; align-items:center; justify-content:center; padding:40px 28px; padding-top:calc(44px + var(--st)); }
+.pin-logo { width:60px; height:60px; border-radius:18px; background:var(--accent); display:flex; align-items:center; justify-content:center; margin-bottom:26px; }
+.pin-logo svg { width:28px; height:28px; }
+#pin-screen h1 { font-size:24px; font-weight:700; margin-bottom:5px; }
+#pin-screen p { font-size:13px; color:var(--text2); margin-bottom:38px; }
+.pin-dots { display:flex; gap:14px; margin-bottom:34px; }
+.pin-dot { width:13px; height:13px; border-radius:50%; border:2px solid var(--text3); transition:all .18s; }
+.pin-dot.filled { background:var(--accent); border-color:var(--accent); transform:scale(1.15); }
+.pin-dot.error { background:var(--danger); border-color:var(--danger); animation:shake .38s; }
+.pin-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:11px; width:100%; max-width:272px; }
+.pin-key { aspect-ratio:1; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); font-size:21px; font-weight:600; color:var(--text); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; user-select:none; transition:background .1s, transform .09s; }
+.pin-key:active { background:var(--bg4); transform:scale(0.93); }
+.pin-key.zero { grid-column:2; }
+.pin-key.del { background:transparent; font-size:17px; color:var(--text2); }
+.pin-key .sub { font-size:7.5px; letter-spacing:.12em; color:var(--text3); margin-top:2px; font-family:var(--mono); }
+.pin-err { font-size:13px; color:var(--danger); margin-top:14px; min-height:18px; }
+
+/* App shell */
+#app { display:none; height:100%; flex-direction:column; }
+#app.visible { display:flex; }
+
+/* Header */
+.hdr { padding:12px 16px 8px; padding-top:calc(12px + var(--st)); flex-shrink:0; }
+.hdr-row { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.hdr-date { font-size:19px; font-weight:700; line-height:1.15; }
+.hdr-sub { font-size:11.5px; color:var(--text2); margin-top:2px; }
+.menu-btn { width:34px; height:34px; background:var(--bg3); border:1px solid var(--border); border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+.menu-btn svg { width:15px; height:15px; color:var(--text2); }
+.prog-row { display:flex; justify-content:space-between; margin-bottom:5px; }
+.prog-label { font-size:10.5px; color:var(--text2); }
+.prog-frac { font-size:10.5px; font-weight:700; color:var(--accent); font-family:var(--mono); }
+.prog-track { height:3px; background:var(--bg3); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+
+/* Day tabs */
+.day-tabs { display:flex; gap:5px; padding:8px 16px 0; flex-shrink:0; }
+.day-tab { flex:1; padding:7px 4px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r-xs); font-size:12px; font-weight:700; color:var(--text2); font-family:var(--font); cursor:pointer; transition:all .18s; text-align:center; }
+.day-tab.active { background:var(--accent); color:#0f0f0f; border-color:var(--accent); }
+
+/* Content */
+.content { flex:1; overflow-y:auto; overflow-x:hidden; padding:10px 16px; padding-bottom:calc(20px + var(--sb)); -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.content::-webkit-scrollbar { display:none; }
+.sec-lbl { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.11em; color:var(--text3); margin:8px 2px 8px; display:flex; align-items:center; gap:6px; }
+.sec-lbl span { color:var(--text2); }
+.sec-lbl .ro-badge { font-size:9px; background:var(--bg3); border:1px solid var(--border); color:var(--text2); padding:2px 7px; border-radius:10px; letter-spacing:.04em; text-transform:none; font-weight:500; }
+.hint { text-align:center; font-size:10.5px; color:var(--text3); padding:6px 0 2px; }
+
+/* Grid */
+.grid { display:grid; grid-template-columns:repeat(var(--cols,5),1fr); gap:7px; margin-bottom:10px; }
+
+/* Tiles */
+.tile {
+  border-radius:var(--r);
+  padding:12px 10px 10px;
+  position:relative;
+  min-height:96px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  cursor:pointer;
+  user-select:none;
+  -webkit-touch-callout:none;
+  transition:transform .08s, opacity .25s;
+}
+.tile:active { transform:scale(0.93); }
+.tile.pressing { transform:scale(0.90); filter:brightness(1.2); }
+
+/* skins */
+.s-co { background:var(--co-bg); border:1.5px solid var(--co-bd); }
+.s-es { background:var(--es-bg); border:1.5px solid var(--es-bd); }
+.s-di { background:var(--di-bg); border:1.5px solid var(--di-bd); }
+.s-dn-co { background:#1e1e1e; border:1.5px solid var(--co-bd); }
+.s-dn-es { background:#1e1e1e; border:1.5px solid var(--es-bd); }
+.s-dn-di { background:#1e1e1e; border:1.5px solid var(--di-bd); }
+.s-ro { background:var(--bg3);   border:1.5px solid var(--border); }
+.s-ro-co { background:var(--bg3); border:1.5px solid var(--co-bd); opacity:0.6; }
+.s-ro-es { background:var(--bg3); border:1.5px solid var(--es-bd); opacity:0.6; }
+.s-ro-di { background:var(--bg3); border:1.5px solid var(--di-bd); opacity:0.6; }
+.s-li { background:var(--bg3);   border:1.5px solid var(--border2); opacity:1; cursor:default; }
+
+.t-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.t-name { font-size:20px; font-weight:800; font-family:var(--mono); line-height:1; }
+.s-co .t-name { color:var(--co); }
+.s-es .t-name { color:var(--es); }
+.s-di .t-name { color:var(--di); }
+.s-ro-co .t-name { color:rgba(255,159,67,.6); }
+.s-ro-es .t-name { color:rgba(162,155,254,.6); }
+.s-ro-di .t-name { color:rgba(85,239,196,.55); }
+.s-ro-co .t-type, .s-ro-es .t-type, .s-ro-di .t-type { color:var(--text2); }
+.s-dn-co .t-name { color:rgba(255,159,67,.5); }
+.s-dn-es .t-name { color:rgba(162,155,254,.5); }
+.s-dn-di .t-name { color:rgba(85,239,196,.45); }
+.s-ro .t-name { color:var(--text3); }
+.s-li .t-name { color:var(--text2); }
+
+.t-chk { width:20px; height:20px; border-radius:50%; border:1.5px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.t-chk.on { background:var(--accent); border-color:var(--accent); }
+.t-chk svg { width:10px; height:10px; }
+
+.t-type { font-size:11px; font-weight:600; line-height:1.3; margin-bottom:4px; }
+.s-co .t-type { color:rgba(255,159,67,.85); }
+.s-es .t-type { color:rgba(162,155,254,.85); }
+.s-di .t-type { color:rgba(85,239,196,.75); }
+.s-dn-co .t-type, .s-dn-es .t-type, .s-dn-di .t-type { color:var(--text2); }
+.s-ro .t-type { color:var(--text3); }
+.s-li .t-type { color:var(--text2); }
+
+.t-guests { font-size:11px; color:var(--text2); display:flex; align-items:center; gap:3px; }
+
+/* maintenance dot */
+.t-mdot { position:absolute; top:7px; right:7px; width:6px; height:6px; border-radius:50%; box-shadow:0 0 0 1.5px var(--bg); }
+.t-mdot.urg { background:var(--danger); }
+.t-mdot.nor { background:var(--co); }
+
+/* Bottom Sheet */
+.sh-ov { display:none; position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.72); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); }
+.sh-ov.open { display:block; }
+.bsheet { position:fixed; bottom:0; left:0; right:0; z-index:51; background:var(--bg2); border-radius:24px 24px 0 0; padding:0 0 calc(18px + var(--sb)); transform:translateY(100%); transition:transform .32s cubic-bezier(.4,0,.2,1); max-height:90vh; overflow-y:auto; scrollbar-width:none; }
+.bsheet::-webkit-scrollbar { display:none; }
+.bsheet.open { transform:translateY(0); }
+.sh-handle { width:34px; height:3.5px; background:var(--bg4); border-radius:2px; margin:12px auto 16px; }
+.sh-pad { padding:0 18px; }
+.sh-ttl { font-size:17px; font-weight:700; margin-bottom:3px; }
+.sh-sub { font-size:12px; color:var(--text2); margin-bottom:16px; line-height:1.4; }
+.sh-act { display:flex; align-items:center; gap:13px; padding:14px 18px; cursor:pointer; transition:background .12s; border:none; background:none; width:100%; text-align:left; font-family:var(--font); }
+.sh-act:active { background:var(--bg3); }
+.sh-ico { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.sh-ico.g { background:rgba(200,240,96,.14); }
+.sh-ico.r { background:rgba(255,107,107,.14); }
+.sh-ico.p { background:rgba(162,155,254,.14); }
+.sh-ico.o { background:rgba(255,159,67,.14); }
+.sh-act-lbl { font-size:14px; font-weight:600; color:var(--text); }
+.sh-act-sub { font-size:11px; color:var(--text2); margin-top:1px; }
+.sh-div { height:1px; background:var(--border); margin:3px 0; }
+.sh-label { font-size:11.5px; color:var(--text2); font-weight:600; margin-bottom:7px; display:block; }
+.sh-sel { width:100%; padding:12px 13px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r-sm); font-size:15px; color:var(--text); font-family:var(--font); margin-bottom:12px; outline:none; -webkit-appearance:none; }
+.sh-sel:focus { border-color:rgba(200,240,96,.38); }
+.sh-ta { width:100%; padding:12px 13px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r-sm); font-size:15px; color:var(--text); font-family:var(--font); margin-bottom:12px; outline:none; resize:none; min-height:84px; }
+.sh-ta:focus { border-color:rgba(200,240,96,.38); }
+.pri-row { display:flex; gap:7px; margin-bottom:16px; }
+.pri-btn { flex:1; padding:10px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r-sm); font-size:12px; font-weight:600; color:var(--text2); font-family:var(--font); cursor:pointer; transition:all .14s; }
+.pri-btn.s-nor { background:rgba(255,159,67,.13); border-color:var(--co); color:var(--co); }
+.pri-btn.s-urg { background:rgba(255,107,107,.13); border-color:var(--danger); color:var(--danger); }
+.sh-submit { width:100%; padding:14px; background:var(--accent); border:none; border-radius:var(--r-sm); font-size:15px; font-weight:700; color:#0f0f0f; font-family:var(--font); cursor:pointer; }
+.sh-submit:active { opacity:.84; }
+.sh-maint-item { display:flex; align-items:flex-start; gap:9px; padding:9px 0; border-bottom:1px solid var(--border); }
+.sh-maint-item:last-child { border-bottom:none; }
+.sh-maint-dot { width:7px; height:7px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+.sh-maint-dot.u { background:var(--danger); }
+.sh-maint-dot.n { background:var(--co); }
+
+/* Menu drawer */
+.m-ov { display:none; position:fixed; inset:0; z-index:59; background:rgba(0,0,0,.6); }
+.m-ov.open { display:block; }
+.m-dr { position:fixed; top:0; right:0; bottom:0; z-index:60; width:290px; background:var(--bg2); transform:translateX(100%); transition:transform .28s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; border-left:1px solid var(--border); }
+.m-dr.open { transform:translateX(0); }
+.m-hdr { padding:calc(18px + var(--st)) 18px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.m-hdr-t { font-size:18px; font-weight:700; }
+.m-hdr-s { font-size:11.5px; color:var(--text2); margin-top:2px; }
+.m-scroll { flex:1; overflow-y:auto; scrollbar-width:none; }
+.m-scroll::-webkit-scrollbar { display:none; }
+.m-sec { padding:14px 18px 6px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text3); display:flex; align-items:center; gap:6px; }
+.m-badge { background:var(--danger); color:#fff; font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; font-family:var(--mono); }
+.m-btn { display:flex; align-items:center; gap:12px; padding:13px 18px; cursor:pointer; transition:background .12s; border:none; background:none; width:100%; text-align:left; font-family:var(--font); }
+.m-btn:active { background:var(--bg3); }
+.m-btn svg { width:16px; height:16px; color:var(--text2); flex-shrink:0; }
+.m-btn-lbl { font-size:13.5px; font-weight:500; color:var(--text); }
+.m-btn-sub { font-size:11px; color:var(--text2); margin-top:1px; }
+.m-btn.danger .m-btn-lbl { color:var(--danger); }
+.m-btn.danger svg { color:var(--danger); }
+.m-foot { border-top:1px solid var(--border); flex-shrink:0; }
+.m-maint-list { padding:0 18px; }
+.m-maint-item { display:flex; align-items:flex-start; gap:9px; padding:11px 0; border-bottom:1px solid var(--border); }
+.m-maint-item:last-child { border-bottom:none; }
+.m-maint-dot { width:7px; height:7px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+.m-maint-dot.urgente { background:var(--danger); }
+.m-maint-dot.normal { background:var(--co); }
+.m-maint-r { font-size:12.5px; font-weight:700; }
+.m-maint-t { font-size:11.5px; color:var(--text2); margin-top:1px; line-height:1.4; }
+.m-maint-d { font-size:10px; color:var(--text3); font-family:var(--mono); margin-top:2px; }
+
+/* Modals */
+.modal-ov { display:none; position:fixed; inset:0; z-index:70; background:rgba(0,0,0,.72); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+.modal-ov.open { display:block; }
+.modal-box { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.95); z-index:71; background:var(--bg2); border-radius:20px; width:calc(100% - 40px); max-width:340px; max-height:80vh; display:flex; flex-direction:column; transition:transform .25s, opacity .25s; opacity:0; pointer-events:none; }
+.modal-box.open { transform:translate(-50%,-50%) scale(1); opacity:1; pointer-events:auto; }
+.modal-hdr { display:flex; align-items:center; justify-content:space-between; padding:16px 18px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.modal-title { font-size:16px; font-weight:700; }
+.modal-close { width:28px; height:28px; background:var(--bg3); border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text2); }
+.modal-close svg { width:13px; height:13px; }
+.modal-body { overflow-y:auto; flex:1; scrollbar-width:none; }
+.modal-body::-webkit-scrollbar { display:none; }
+.modal-foot { padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:8px; flex-shrink:0; }
+.modal-btn-sec { flex:1; padding:11px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r-sm); font-size:13px; font-weight:600; color:var(--text2); font-family:var(--font); cursor:pointer; }
+.modal-btn-ok { flex:1; padding:11px; background:var(--accent); border:none; border-radius:var(--r-sm); font-size:13px; font-weight:700; color:#0f0f0f; font-family:var(--font); cursor:pointer; }
+.tog-list { padding:0 18px; }
+.tog-item { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border); }
+.tog-item:last-child { border-bottom:none; }
+.tog-name { font-size:13.5px; font-weight:500; }
+.tsw { width:42px; height:24px; background:var(--bg3); border-radius:12px; position:relative; cursor:pointer; transition:background .18s; flex-shrink:0; border:1px solid var(--border); }
+.tsw.on { background:var(--accent); border-color:var(--accent); }
+.tsw-k { position:absolute; top:3px; left:3px; width:16px; height:16px; background:var(--text3); border-radius:50%; transition:transform .18s; }
+.tsw.on .tsw-k { transform:translateX(18px); background:#0f0f0f; }
+.cols-opts { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.col-opt { padding:13px 6px; background:var(--bg3); border:1.5px solid var(--border); border-radius:var(--r-sm); text-align:center; cursor:pointer; transition:all .15s; }
+.col-opt.active { border-color:var(--accent); background:rgba(200,240,96,.12); }
+.col-opt-n { font-size:20px; font-weight:800; font-family:var(--mono); color:var(--text); }
+.col-opt.active .col-opt-n { color:var(--accent); }
+.col-opt-l { font-size:9.5px; color:var(--text2); margin-top:2px; }
+
+/* Empty state */
+.empty { text-align:center; padding:44px 16px; color:var(--text3); font-size:13.5px; line-height:1.7; }
+.empty-ico { font-size:38px; margin-bottom:10px; }
+
+/* Toast */
+#toast { position:fixed; bottom:calc(50px + var(--sb)); left:50%; transform:translateX(-50%) translateY(18px); background:var(--bg3); border:1px solid var(--border2); color:var(--text); font-size:12.5px; font-weight:600; padding:10px 18px; border-radius:50px; opacity:0; transition:all .28s; pointer-events:none; white-space:nowrap; z-index:300; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Footer counter */
+.footer-bar {
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  padding:7px 16px calc(8px + var(--sb));
+  border-top:1px solid var(--border);
+  background:var(--bg2);
+}
+.footer-stat {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  font-size:10.5px;
+  font-weight:700;
+  font-family:var(--mono);
+}
+.footer-dot {
+  width:7px; height:7px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.footer-stat.co  .footer-dot { background:var(--co); }
+.footer-stat.es  .footer-dot { background:var(--es); }
+.footer-stat.di  .footer-dot { background:var(--di); }
+.footer-stat.dn  .footer-dot { background:var(--accent); }
+.footer-stat.li  .footer-dot { background:var(--text3); }
+.footer-stat.co  { color:var(--co); }
+.footer-stat.es  { color:var(--es); }
+.footer-stat.di  { color:var(--di); }
+.footer-stat.dn  { color:var(--accent); }
+.footer-stat.li  { color:var(--text3); }
+.footer-sep { color:var(--text3); font-size:9px; }
+
+/* Saving overlay on tile */
+.tile.saving { pointer-events:none; }
+.tile.saving::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:var(--r);
+  background:rgba(0,0,0,0.35);
+  animation:pulse-save .7s ease-in-out infinite alternate;
+}
+@keyframes pulse-save { from{opacity:.3} to{opacity:.7} }
+
+/* Offline banner */
+#offline-bar {
+  display:none;
+  background:#c0392b;
+  color:#fff;
+  font-size:11.5px;
+  font-weight:700;
+  text-align:center;
+  padding:7px 16px;
+  flex-shrink:0;
+  letter-spacing:.02em;
+}
+#offline-bar.visible { display:block; }
+
+/* Realtime status dot in header */
+#rt-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:var(--accent);
+  flex-shrink:0;
+  transition:background .3s;
+}
+#rt-dot.stale { background:var(--co); }
+#rt-dot.offline { background:var(--danger); }
+.hdr-row-right { display:flex; align-items:center; gap:8px; }
+
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div><div class="loading-text">Cargando…</div></div>
+
+<div id="pin-screen">
+  <div class="pin-logo">
+    <svg viewBox="0 0 32 32" fill="none" stroke="#0f0f0f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 12h20M6 12v12a2 2 0 002 2h16a2 2 0 002-2V12M6 12l2-6h16l2 6"/>
+      <path d="M13 17h6M13 21h4"/>
+    </svg>
+  </div>
+  <h1>Limpieza</h1>
+  <p>Ingresá el PIN para continuar</p>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <div class="pin-key" data-n="1">1<span class="sub"></span></div>
+    <div class="pin-key" data-n="2">2<span class="sub">ABC</span></div>
+    <div class="pin-key" data-n="3">3<span class="sub">DEF</span></div>
+    <div class="pin-key" data-n="4">4<span class="sub">GHI</span></div>
+    <div class="pin-key" data-n="5">5<span class="sub">JKL</span></div>
+    <div class="pin-key" data-n="6">6<span class="sub">MNO</span></div>
+    <div class="pin-key" data-n="7">7<span class="sub">PQRS</span></div>
+    <div class="pin-key" data-n="8">8<span class="sub">TUV</span></div>
+    <div class="pin-key" data-n="9">9<span class="sub">WXYZ</span></div>
+    <div class="pin-key zero" data-n="0">0</div>
+    <div class="pin-key del" data-del="1">⌫</div>
+  </div>
+  <div class="pin-err" id="pin-err"></div>
+</div>
+
+<div id="app">
+  <div id="offline-bar">Sin conexión — los cambios no se guardarán</div>
+  <div class="hdr">
+    <div class="hdr-row">
+      <div>
+        <div class="hdr-date" id="hdr-date">—</div>
+        <div class="hdr-sub" id="hdr-sub">Cargando…</div>
+      </div>
+      <div class="hdr-row-right">
+        <div id="rt-dot" title="Conexión en tiempo real" onclick="manualRefresh()" style="cursor:pointer;" title="Tocar para actualizar"></div>
+        <button class="menu-btn" onclick="openMenu()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        </button>
+      </div>
+    </div>
+    <div class="prog-row"><span class="prog-label">Progreso del día</span><span class="prog-frac" id="pfrac">0/0</span></div>
+    <div class="prog-track"><div class="prog-fill" id="pfill" style="width:0%"></div></div>
+  </div>
+  <div class="day-tabs">
+    <button class="day-tab active" id="dy-hoy"   onclick="switchDay('hoy')">Hoy</button>
+    <button class="day-tab"       id="dy-man"    onclick="switchDay('manana')">Mañana</button>
+  </div>
+  <div class="content" id="main-ct"></div>
+  <div class="footer-bar" id="footer-bar"></div>
+</div>
+
+<!-- Bottom sheet -->
+<div class="sh-ov" id="sh-ov" onclick="closeSheet()"></div>
+<div class="bsheet" id="bsheet"><div class="sh-handle"></div><div id="sh-body"></div></div>
+
+<!-- Menu drawer -->
+<div class="m-ov" id="m-ov" onclick="closeMenu()"></div>
+<div class="m-dr" id="m-dr">
+  <div class="m-hdr"><div class="m-hdr-t">Opciones</div><div class="m-hdr-s">Configuración personal</div></div>
+  <div class="m-scroll">
+    <div class="m-sec">Configuración</div>
+    <button class="m-btn" onclick="toggleTheme()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" id="theme-icon"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <div><div class="m-btn-lbl" id="theme-btn-label">Modo claro</div><div class="m-btn-sub">Cambiar apariencia</div></div>
+    </button>
+    <button class="m-btn" onclick="openRoomsModal()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <div><div class="m-btn-lbl">Habitaciones visibles</div><div class="m-btn-sub">Seleccioná las que te corresponden</div></div>
+    </button>
+    <button class="m-btn" onclick="openColsModal()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <div><div class="m-btn-lbl">Columnas de la grilla</div><div class="m-btn-sub" id="cols-desc">5 columnas</div></div>
+    </button>
+    <div style="height:1px;background:var(--border);margin:6px 0;"></div>
+    <div class="m-sec">Mantenimiento pendiente <span id="m-maint-bdg"></span></div>
+    <div class="m-maint-list" id="m-maint-list"></div>
+    <button class="m-btn" onclick="openNewMaint()">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <div class="m-btn-lbl">Reportar nuevo problema</div>
+    </button>
+  </div>
+  <div class="m-foot">
+    <button class="m-btn danger" onclick="doLogout()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <div class="m-btn-lbl">Cerrar sesión</div>
+    </button>
+  </div>
+</div>
+
+<!-- Rooms modal -->
+<div class="modal-ov" id="rooms-ov" onclick="closeRoomsModal()"></div>
+<div class="modal-box" id="rooms-box">
+  <div class="modal-hdr">
+    <div class="modal-title">Habitaciones visibles</div>
+    <button class="modal-close" onclick="closeRoomsModal()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="modal-body">
+    <div style="padding:10px 18px 4px;font-size:11.5px;color:var(--text2);line-height:1.5;">Las desactivadas no aparecen en la grilla.</div>
+    <div class="tog-list">
+      <div class="tog-item">
+        <span class="tog-name" style="font-weight:600;">Mostrar habitaciones libres</span>
+        <div class="tsw" id="tsw-empty" onclick="togShowEmpty()"><div class="tsw-k"></div></div>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--border);margin:4px 18px;"></div>
+    <div class="tog-list" id="rooms-tog-list"></div>
+  </div>
+  <div class="modal-foot">
+    <button class="modal-btn-sec" onclick="showAllRooms()">Mostrar todas</button>
+    <button class="modal-btn-ok" onclick="closeRoomsModal()">Listo</button>
+  </div>
+</div>
+
+<!-- Cols modal -->
+<div class="modal-ov" id="cols-ov" onclick="closeColsModal()"></div>
+<div class="modal-box" id="cols-box">
+  <div class="modal-hdr">
+    <div class="modal-title">Columnas de la grilla</div>
+    <button class="modal-close" onclick="closeColsModal()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="modal-body" style="padding:16px 18px;">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Elegí según el tamaño de tu pantalla.</div>
+    <div class="cols-opts" id="cols-opts"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Config ──────────────────────────────────────────────
+const SB_URL = 'https://ozjqqgwcztuummvwpgfu.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96anFxZ3djenR1dW1tdndwZ2Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MTA3NzIsImV4cCI6MjA2NjQ4Njc3Mn0.7L7TliaKQllfY4nF5J8Kh3D0TkeVFoPLjbt2nQ0Er0o';
+const db = supabase.createClient(SB_URL, SB_KEY);
+
+// ── State ────────────────────────────────────────────────
+const S = {
+  rooms: [],
+  reservations: [],
+  day: 'hoy',
+  pin: '0000',
+  hidden: new Set(JSON.parse(localStorage.getItem('cl_h') || '[]')),
+  showEmpty: localStorage.getItem('cl_show_empty') !== '0', // default true
+  lightMode: localStorage.getItem('cl_light') === '1',
+  cols: parseInt(localStorage.getItem('cl_cols') || '5'),
+};
+
+// ── Date utils ───────────────────────────────────────────
+function toD(d) { return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().split('T')[0]; }
+const T0 = new Date(); T0.setHours(0,0,0,0);
+const T1 = new Date(T0); T1.setDate(T1.getDate()+1);
+const DS0 = toD(T0), DS1 = toD(T1);
+const aDS = () => S.day === 'hoy' ? DS0 : DS1;
+const isRO = () => S.day === 'manana';
+
+// ── Toast ────────────────────────────────────────────────
+let toastT;
+function toast(m, d=2400) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), d);
+}
+
+// ── Cleaning type logic ──────────────────────────────────
+function tInfo(res, ds) {
+  const sp = res.special_cleanings || [];
+  const spT = sp.find(c => c.date === ds);
+  const isOut = res.checkout === ds;
+  const isIn  = res.checkin  === ds;   // arrival day — room already clean
+  const active = ds > res.checkin && ds < res.checkout;
+  if (isOut)   return { t:'checkout', l:'Checkout',         sp:null,             done: res.checkout_cleaning?.status === 'lista' };
+  if (isIn)    return null;            // checkin day → no cleaning needed
+  if (spT)     return { t:'especial', l:'Limpieza especial', sp:sp.indexOf(spT),  done: !!spT.completed };
+  if (active)  return { t:'diaria',   l:'Limpieza diaria',   sp:null,             done: !!(res.daily_cleanings||[]).find(c => c.date===ds && c.done) };
+  return null;
+}
+const isDone = (res, ds) => { const i = tInfo(res,ds); return i ? i.done : false; };
+
+// ── PIN ──────────────────────────────────────────────────
+let pb = '';
+const SK = 'cl_ok_' + DS0;
+
+async function initApp() {
+  const { data } = await db.from('settings').select('value').eq('key','cleaning_pin').single();
+  if (data?.value) S.pin = data.value.trim();
+  document.getElementById('loading').classList.add('hidden');
+  if (sessionStorage.getItem(SK)) { await loadData(); }
+  else { document.getElementById('pin-screen').style.display = 'flex'; }
+}
+
+function updDots(err) {
+  for (let i=0; i<4; i++) {
+    const d = document.getElementById('d'+i);
+    d.className = 'pin-dot';
+    if (err) d.classList.add('error');
+    else if (i < pb.length) d.classList.add('filled');
+  }
+}
+
+async function checkPin() {
+  if (pb === S.pin) {
+    sessionStorage.setItem(SK, '1');
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('loading').classList.remove('hidden');
+    document.querySelector('.loading-text').textContent = 'Cargando habitaciones…';
+    await loadData();
+  } else {
+    updDots(true);
+    document.getElementById('pin-err').textContent = 'PIN incorrecto';
+    setTimeout(() => { pb=''; updDots(false); document.getElementById('pin-err').textContent=''; }, 1200);
+  }
+}
+
+document.querySelectorAll('.pin-key').forEach(k => {
+  k.addEventListener('click', () => {
+    if (k.dataset.del) pb = pb.slice(0,-1);
+    else if (pb.length < 4) pb += k.dataset.n;
+    updDots(false);
+    if (pb.length === 4) checkPin();
+  });
+});
+
+// ── Data ─────────────────────────────────────────────────
+async function loadData() {
+  const [rr, ar] = await Promise.all([
+    db.from('rooms').select('*').order('id'),
+    db.from('reservations').select('*').or(`and(checkin.lte.${DS1},checkout.gte.${DS0})`)
+  ]);
+  S.rooms        = rr.data || [];
+  S.reservations = (ar.data || []).filter(r => r.status !== 'bloqueada');
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('loading').classList.add('hidden');
+  const app = document.getElementById('app');
+  app.classList.add('visible');
+  applyCols();
+  applyTheme();
+  renderAll();
+  buildMenuMaint();
+  initRT();
+  bindLongPress();
+}
+
+// ── Offline detection ──────────────────────────────
+function updateOnlineStatus() {
+  const offline = !navigator.onLine;
+  document.getElementById('offline-bar').classList.toggle('visible', offline);
+  const dot = document.getElementById('rt-dot');
+  if (dot) dot.classList.toggle('offline', offline);
+}
+window.addEventListener('online',  () => { updateOnlineStatus(); if (rtChannel) initRT(); });
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// ── Realtime reconnect ──────────────────────────────
+let rtChannel = null;
+let rtStaleTimer = null;
+
+function markRtStale() {
+  const dot = document.getElementById('rt-dot');
+  if (dot) dot.classList.add('stale');
+}
+function markRtLive() {
+  const dot = document.getElementById('rt-dot');
+  if (dot) { dot.classList.remove('stale'); dot.classList.remove('offline'); }
+  clearTimeout(rtStaleTimer);
+  // If no event in 30s, mark stale
+  rtStaleTimer = setTimeout(markRtStale, 30000);
+}
+
+function initRT() {
+  if (rtChannel) db.removeChannel(rtChannel);
+  rtChannel = db.channel('cl-rt5')
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'reservations' }, p => {
+      markRtLive();
+      const i = S.reservations.findIndex(r => r.id == p.new.id);
+      if (i !== -1) S.reservations[i] = p.new;
+      else if (p.new.status !== 'bloqueada') S.reservations.push(p.new);
+      renderAll();
+    })
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'reservations' }, p => {
+      if (!S.reservations.find(r => r.id == p.new.id) && p.new.status !== 'bloqueada') S.reservations.push(p.new);
+      renderAll();
+    })
+    .on('postgres_changes', { event:'DELETE', schema:'public', table:'reservations' }, p => {
+      S.reservations = S.reservations.filter(r => r.id != p.old.id); renderAll();
+    })
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'rooms' }, p => {
+      const i = S.rooms.findIndex(r => r.id == p.new.id);
+      if (i !== -1) S.rooms[i] = p.new;
+      renderAll(); buildMenuMaint();
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        markRtLive();
+      } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        markRtStale();
+        // Try reconnecting after 5s
+        setTimeout(() => { if (navigator.onLine) initRT(); }, 5000);
+      }
+    });
+}
+
+// ── Render ───────────────────────────────────────────────
+function renderAll() { renderHeader(); renderGrid(); renderFooter(); }
+
+function renderFooter() {
+  const bar = document.getElementById('footer-bar');
+  if (!bar) return;
+  const ds = aDS();
+  const entries = getEntries(ds);
+
+  let co=0, coD=0, es=0, esD=0, di=0, diD=0, done=0, libre=0;
+  entries.forEach(e => {
+    if (e.empty) { libre++; return; }
+    const d = isDone(e.res, ds);
+    if (d) done++;
+    if (e.res && tInfo(e.res,ds)) {
+      const t = tInfo(e.res,ds).t;
+      if (t==='checkout')  { co++;  if (d) coD++; }
+      if (t==='especial')  { es++;  if (d) esD++; }
+      if (t==='diaria')    { di++;  if (d) diD++; }
+    }
+  });
+
+  const stat = (cls, label, done, total) => total === 0 ? '' :
+    `<div class="footer-stat ${cls}"><div class="footer-dot"></div>${done}/${total} ${label}</div>`;
+
+  let html = '';
+  if (co) html += stat('co', 'checkout', coD, co);
+  if (co && (es||di||done)) html += '<span class="footer-sep">·</span>';
+  if (es) html += stat('es', 'especial', esD, es);
+  if (es && (di||done)) html += '<span class="footer-sep">·</span>';
+  if (di) html += stat('di', 'diaria', diD, di);
+  if ((co||es||di) && done===co+es+di && done>0) {
+    // all done — show accent
+  }
+  if (libre && S.showEmpty) {
+    if (co||es||di) html += '<span class="footer-sep">·</span>';
+    html += `<div class="footer-stat li"><div class="footer-dot"></div>${libre} libre${libre!==1?'s':''}</div>`;
+  }
+  bar.innerHTML = html || '<span style="font-size:10px;color:var(--text3);">Sin habitaciones</span>';
+}
+
+function renderHeader() {
+  const d = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('hdr-date').textContent = d.charAt(0).toUpperCase()+d.slice(1);
+  const entries = getEntries(DS0);
+  const taskE   = entries.filter(e => !e.empty);
+  const done    = taskE.filter(e => isDone(e.res, DS0)).length;
+  const total   = taskE.length;
+  document.getElementById('hdr-sub').textContent = total===0
+    ? 'Sin tareas para hoy'
+    : `${total-done} pendiente${total-done!==1?'s':''} · ${done} lista${done!==1?'s':''}`;
+  document.getElementById('pfrac').textContent = `${done}/${total}`;
+  document.getElementById('pfill').style.width = total ? `${Math.round(done/total*100)}%` : '0%';
+}
+
+// Returns array of {res, room, empty} for all non-hidden rooms, in rooms order
+function getEntries(ds) {
+  return S.rooms
+    .filter(room => !S.hidden.has(room.id))
+    .map(room => {
+      const res = S.reservations.find(r => r.room_id === room.id && !!tInfo(r, ds));
+      return res ? { res, room, empty:false } : { res:null, room, empty:true };
+    })
+    .filter(e => !e.empty || S.showEmpty);
+}
+
+function renderGrid() {
+  const ct = document.getElementById('main-ct');
+  if (!S.rooms.length) {
+    ct.innerHTML = '<div class="empty"><div class="empty-ico">⏳</div>Cargando habitaciones…</div>';
+    return;
+  }
+  const ds = aDS(), ro = isRO();
+  const entries = getEntries(ds);
+  const taskCount = entries.filter(e => !e.empty).length;
+  const doneCount = entries.filter(e => !e.empty && isDone(e.res,ds)).length;
+  let html = '';
+  if (ro) {
+    html += `<div class="sec-lbl">Mañana <span class="ro-badge">solo lectura</span></div>`;
+  } else {
+    html += `<div class="sec-lbl">Habitaciones <span>· ${doneCount}/${taskCount} listas</span></div>`;
+  }
+  html += `<div class="grid" id="room-grid">`;
+  entries.forEach((e, i) => { html += buildTile(e, ds, ro); });
+  html += `</div>`;
+  if (!ro) html += `<div class="hint">Mantené presionado para opciones</div>`;
+  ct.innerHTML = html;
+}
+
+function buildTile(entry, ds, ro) {
+  const { res, room, empty } = entry;
+  const name  = room.name;
+  const short = name.replace(/[^0-9]/g,'') || name.slice(0,4);
+  const mNotes = (room.maintenance_notes||[]).filter(n => !n.resolved);
+  const mDot = mNotes.length
+    ? `<div class="t-mdot ${mNotes.some(n=>n.priority==='urgente')?'urg':'nor'}"></div>` : '';
+
+  if (empty || !res) {
+    // Empty room tile — clickable to report maintenance
+    const click = ro ? '' : `data-room-id="${room.id}"`;
+    return `<div class="tile s-li" ${click}>
+      ${mDot}
+      <div class="t-top"><div class="t-name">${short}</div><div class="t-chk"></div></div>
+      <div class="t-bot"><div class="t-type">Libre</div></div>
+    </div>`;
+  }
+
+  // Occupied tile
+  const info  = tInfo(res, ds);
+  const done  = !ro && isDone(res, ds);
+  const typeKey = info.t==='checkout'?'co':info.t==='especial'?'es':'di';
+  const activeSkin = info.t==='checkout'?'s-co':info.t==='especial'?'s-es':'s-di';
+  const skin  = ro ? `s-ro-${typeKey}` : done ? `s-dn-${typeKey}` : activeSkin;
+  const guests = res.num_guests;
+  const gH = `<div class="t-guests"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${guests>0?guests:'—'}</div>`;
+  const chkSvg = done
+    ? `<svg fill="none" stroke="#0f0f0f" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`
+    : `<svg fill="none" stroke="rgba(255,255,255,.15)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const click = ro ? '' : `data-res-id="${res.id}"`;
+  return `<div class="tile ${skin}" ${click}>
+    ${mDot}
+    <div class="t-top">
+      <div class="t-name">${short}</div>
+      <div class="t-chk ${done?'on':''}">${chkSvg}</div>
+    </div>
+    <div class="t-bot">
+      <div class="t-type">${info.l}</div>
+      ${gH}
+    </div>
+  </div>`;
+}
+
+// ── Tile interaction ─────────────────────────────────────
+// Uses a single delegated listener on the grid.
+// Mouse: click opens sheet. Touch: long-press opens sheet.
+let lpTimer = null;
+
+function bindLongPress() {
+  const ct = document.getElementById('main-ct');
+  // Remove any previous listener by cloning (clean slate on each render)
+  // Instead, use event delegation on the static #main-ct element
+
+  ct.addEventListener('click', onTileClick, false);
+  ct.addEventListener('pointerdown',  onTilePointerDown, { passive:true });
+  ct.addEventListener('pointerup',    onTilePointerUp,   { passive:true });
+  ct.addEventListener('pointercancel',onTilePointerUp,   { passive:true });
+}
+
+function getTileFromEvent(e) {
+  const t = e.target.closest('[data-res-id],[data-room-id]');
+  return t;
+}
+
+function openTile(t) {
+  if (!t) return;
+  if (t.dataset.resId)   openResSheet(parseInt(t.dataset.resId));
+  else if (t.dataset.roomId) openEmptySheet(parseInt(t.dataset.roomId));
+}
+
+function onTileClick(e) {
+  // Mouse only (touch generates click too, but we suppress it for touch)
+  if (e.pointerType === 'touch') return;
+  const t = getTileFromEvent(e);
+  openTile(t);
+}
+
+let lpTarget = null;
+function onTilePointerDown(e) {
+  if (e.pointerType !== 'touch') return;
+  const t = getTileFromEvent(e);
+  if (!t) return;
+  lpTarget = t;
+  t.classList.add('pressing');
+  clearTimeout(lpTimer);
+  lpTimer = setTimeout(() => {
+    t.classList.remove('pressing');
+    if (navigator.vibrate) navigator.vibrate(30);
+    openTile(t);
+    lpTarget = null;
+  }, 500);
+}
+
+function onTilePointerUp(e) {
+  clearTimeout(lpTimer);
+  if (lpTarget) { lpTarget.classList.remove('pressing'); lpTarget = null; }
+}
+
+// ── Room sheet (occupied) ────────────────────────────────
+function openResSheet(resId) {
+  const res  = S.reservations.find(r => r.id === resId); if (!res) return;
+  const room = S.rooms.find(r => r.id === res.room_id);
+  const name = room?.name || `Hab. ${res.room_id}`;
+  const info = tInfo(res, DS0);
+  const done = isDone(res, DS0);
+  const mNotes = (room?.maintenance_notes||[]).filter(n => !n.resolved);
+
+  let body = `<div class="sh-pad"><div class="sh-ttl">${name}</div>
+    <div class="sh-sub">${info.l}${res.num_guests>0?` · ${res.num_guests} ${res.num_guests===1?'huésped':'huéspedes'}`:''}</div></div>`;
+
+  if (!done) {
+    body += `<button class="sh-act" onclick="doMark(${resId})">
+      <div class="sh-ico g"><svg width="19" height="19" fill="none" stroke="var(--accent)" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div><div class="sh-act-lbl">Marcar como lista</div><div class="sh-act-sub">${info.l} — confirmar que está hecha</div></div>
+    </button>`;
+  } else {
+    body += `<button class="sh-act" onclick="doUnmark(${resId})">
+      <div class="sh-ico r"><svg width="19" height="19" fill="none" stroke="var(--danger)" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+      <div><div class="sh-act-lbl" style="color:var(--danger)">Desmarcar</div><div class="sh-act-sub">Volver a pendiente</div></div>
+    </button>`;
+  }
+
+  if (!done && info.t === 'especial' && info.sp !== null) {
+    body += `<div class="sh-div"></div>
+    <button class="sh-act" onclick="doPostpone(${resId},${info.sp})">
+      <div class="sh-ico p"><svg width="19" height="19" fill="none" stroke="var(--es)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div><div class="sh-act-lbl">Posponer limpieza especial</div><div class="sh-act-sub">Mover al día siguiente</div></div>
+    </button>`;
+  }
+
+  body += `<div class="sh-div"></div>
+  <button class="sh-act" onclick="openMaintSheet(${res.room_id})">
+    <div class="sh-ico o"><svg width="19" height="19" fill="none" stroke="var(--co)" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
+    <div><div class="sh-act-lbl">Reportar mantenimiento</div><div class="sh-act-sub">Problema en esta habitación</div></div>
+  </button>`;
+
+  if (mNotes.length) {
+    body += `<div class="sh-div"></div><div class="sh-pad" style="padding-top:10px;padding-bottom:6px;">
+      <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:6px;">Problemas pendientes</div>
+      ${mNotes.map(n=>`<div class="sh-maint-item">
+        <div class="sh-maint-dot ${n.priority==='urgente'?'u':'n'}"></div>
+        <div><div style="font-size:12.5px;font-weight:600;color:var(--text)">${n.text}</div>
+        <div style="font-size:10.5px;color:var(--text3);font-family:var(--mono);margin-top:2px;">${n.date} · ${n.priority}</div></div>
+      </div>`).join('')}
+    </div>`;
+  }
+  body += '<div style="height:8px;"></div>';
+  document.getElementById('sh-body').innerHTML = body;
+  openSheet();
+}
+
+// ── Empty room sheet ─────────────────────────────────────
+function openEmptySheet(roomId) {
+  const room = S.rooms.find(r => r.id === roomId); if (!room) return;
+  const mNotes = (room.maintenance_notes||[]).filter(n => !n.resolved);
+  let body = `<div class="sh-pad"><div class="sh-ttl">${room.name}</div>
+    <div class="sh-sub">Habitación libre hoy</div></div>
+  <button class="sh-act" onclick="openMaintSheet(${roomId})">
+    <div class="sh-ico o"><svg width="19" height="19" fill="none" stroke="var(--co)" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
+    <div><div class="sh-act-lbl">Reportar mantenimiento</div><div class="sh-act-sub">Problema en esta habitación</div></div>
+  </button>`;
+  if (mNotes.length) {
+    body += `<div class="sh-div"></div><div class="sh-pad" style="padding-top:10px;padding-bottom:6px;">
+      <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:6px;">Problemas pendientes</div>
+      ${mNotes.map(n=>`<div class="sh-maint-item">
+        <div class="sh-maint-dot ${n.priority==='urgente'?'u':'n'}"></div>
+        <div><div style="font-size:12.5px;font-weight:600;color:var(--text)">${n.text}</div>
+        <div style="font-size:10.5px;color:var(--text3);font-family:var(--mono);margin-top:2px;">${n.date} · ${n.priority}</div></div>
+      </div>`).join('')}
+    </div>`;
+  }
+  body += '<div style="height:8px;"></div>';
+  document.getElementById('sh-body').innerHTML = body;
+  openSheet();
+}
+
+// ── Maintenance sheet ────────────────────────────────────
+function openMaintSheet(preRoomId) {
+  const opts = S.rooms.map(r => `<option value="${r.id}" ${r.id==preRoomId?'selected':''}>${r.name}</option>`).join('');
+  document.getElementById('sh-body').innerHTML = `
+    <div class="sh-pad"><div class="sh-ttl">Reportar problema</div></div>
+    <div class="sh-pad" style="padding-top:0;">
+      <label class="sh-label">Habitación</label>
+      <select class="sh-sel" id="mr">${opts}</select>
+      <label class="sh-label">Descripción</label>
+      <textarea class="sh-ta" id="md" placeholder="Describí el problema…"></textarea>
+      <label class="sh-label">Prioridad</label>
+      <div class="pri-row">
+        <button class="pri-btn s-nor" id="pn" onclick="selPri('normal')">Normal</button>
+        <button class="pri-btn" id="pu" onclick="selPri('urgente')">⚠ Urgente</button>
+      </div>
+      <button class="sh-submit" onclick="submitMaint()">Enviar reporte</button>
+    </div>`;
+  openSheet();
+  setTimeout(() => document.getElementById('md')?.focus(), 380);
+}
+
+function selPri(p) {
+  document.getElementById('pn').className = 'pri-btn' + (p==='normal' ?' s-nor':'');
+  document.getElementById('pu').className = 'pri-btn' + (p==='urgente'?' s-urg':'');
+}
+
+async function submitMaint() {
+  const rid  = parseInt(document.getElementById('mr').value);
+  const desc = document.getElementById('md').value.trim();
+  const pri  = document.getElementById('pu').classList.contains('s-urg') ? 'urgente' : 'normal';
+  if (!desc) { toast('Escribí una descripción'); return; }
+  const room = S.rooms.find(r => r.id === rid); if (!room) return;
+  const notes = [...(room.maintenance_notes||[])];
+  notes.push({ date:DS0, text:desc, priority:pri, resolved:false });
+  const { error } = await db.from('rooms').update({ maintenance_notes:notes }).eq('id', rid);
+  if (error) { toast('Error ✕'); return; }
+  room.maintenance_notes = notes;
+  closeSheet(); renderAll(); buildMenuMaint();
+  toast('Problema reportado ✓');
+}
+
+function openNewMaint() { closeMenu(); openMaintSheet(null); }
+
+// ── Mark / Unmark ────────────────────────────────────────
+async function doMark(resId) {
+  const res = S.reservations.find(r => r.id === resId);
+  if (!res || isDone(res, DS0)) return;
+  setTileSaving(resId, true);
+  const p = {};
+  let daily = [...(res.daily_cleanings||[])];
+  const di = daily.findIndex(c => c.date===DS0);
+  if (di!==-1) daily[di].done=true; else daily.push({date:DS0,done:true});
+  p.daily_cleanings = daily;
+  let sp = [...(res.special_cleanings||[])].map(c => typeof c==='string'?{date:c,completed:false}:c);
+  const si = sp.findIndex(c => c.date===DS0); if (si!==-1) sp[si].completed=true;
+  p.special_cleanings = sp;
+  p.checkout_cleaning = { status:'lista', updated_at:DS0 };
+  const { error } = await db.from('reservations').update(p).eq('id', resId);
+  setTileSaving(resId, false);
+  if (error) { toast('Error al guardar ✕'); return; }
+  res.daily_cleanings=daily; res.special_cleanings=sp; res.checkout_cleaning=p.checkout_cleaning;
+  closeSheet(); renderAll(); toast('¡Lista! ✓');
+}
+
+async function doUnmark(resId) {
+  const res = S.reservations.find(r => r.id === resId); if (!res) return;
+  const room = S.rooms.find(r => r.id === res.room_id);
+  const name = room?.name || `Hab. ${res.room_id}`;
+  // Confirm before undoing
+  const ok = await confirmSheet(`¿Desmarcar ${name}?`, 'La habitación volverá a pendiente.', 'Sí, desmarcar', 'Cancelar');
+  if (!ok) return;
+  setTileSaving(resId, true);
+  const p = {};
+  let daily = [...(res.daily_cleanings||[])];
+  const di = daily.findIndex(c => c.date===DS0); if (di!==-1) daily[di].done=false;
+  p.daily_cleanings = daily;
+  let sp = [...(res.special_cleanings||[])].map(c => typeof c==='string'?{date:c,completed:false}:c);
+  const si = sp.findIndex(c => c.date===DS0); if (si!==-1) sp[si].completed=false;
+  p.special_cleanings = sp;
+  p.checkout_cleaning = { status:'pendiente', updated_at:DS0 };
+  const { error } = await db.from('reservations').update(p).eq('id', resId);
+  setTileSaving(resId, false);
+  if (error) { toast('Error al guardar ✕'); return; }
+  res.daily_cleanings=daily; res.special_cleanings=sp; res.checkout_cleaning=p.checkout_cleaning;
+  closeSheet(); renderAll(); toast('Desmarcada');
+}
+
+async function doPostpone(resId, idx) {
+  const res = S.reservations.find(r => r.id === resId); if (!res) return;
+  let sp = [...(res.special_cleanings||[])].map(c => typeof c==='string'?{date:c,completed:false}:c);
+  const t = sp[idx]; if (!t) return;
+  const d = new Date(t.date+'T00:00:00'); d.setDate(d.getDate()+1);
+  const nd = toD(d);
+  if (nd >= res.checkout) { toast('No se puede posponer más ✕'); return; }
+  sp[idx] = {...t, date:nd};
+  const { error } = await db.from('reservations').update({ special_cleanings:sp }).eq('id', resId);
+  if (error) { toast('Error ✕'); return; }
+  res.special_cleanings = sp;
+  closeSheet(); renderAll(); toast('Pospuesta al día siguiente');
+}
+
+// ── Inline confirm sheet ────────────────────────────────
+function confirmSheet(title, msg, okLabel, cancelLabel) {
+  return new Promise(resolve => {
+    document.getElementById('sh-body').innerHTML = `
+      <div class="sh-pad" style="padding-bottom:6px;">
+        <div class="sh-ttl">${title}</div>
+        <div class="sh-sub">${msg}</div>
+      </div>
+      <button class="sh-act" onclick="window._confirmResolve(true)">
+        <div class="sh-ico r"><svg width="19" height="19" fill="none" stroke="var(--danger)" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+        <div><div class="sh-act-lbl" style="color:var(--danger)">${okLabel}</div></div>
+      </button>
+      <div class="sh-div"></div>
+      <button class="sh-act" onclick="window._confirmResolve(false)">
+        <div class="sh-ico g"><svg width="19" height="19" fill="none" stroke="var(--accent)" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div><div class="sh-act-lbl">${cancelLabel}</div></div>
+      </button>
+      <div style="height:8px;"></div>`;
+    window._confirmResolve = (val) => {
+      closeSheet();
+      delete window._confirmResolve;
+      resolve(val);
+    };
+    openSheet();
+  });
+}
+
+// ── Tile saving state ───────────────────────────────────
+function setTileSaving(resId, saving) {
+  const tile = document.querySelector(`[data-res-id="${resId}"]`);
+  if (tile) tile.classList.toggle('saving', saving);
+}
+
+// ── Sheet helpers ────────────────────────────────────────
+function openSheet()  { document.getElementById('sh-ov').classList.add('open');    document.getElementById('bsheet').classList.add('open'); }
+function closeSheet() { document.getElementById('sh-ov').classList.remove('open'); document.getElementById('bsheet').classList.remove('open'); }
+
+// ── Menu ─────────────────────────────────────────────────
+function openMenu()  { document.getElementById('m-ov').classList.add('open');    document.getElementById('m-dr').classList.add('open'); }
+function closeMenu() { document.getElementById('m-ov').classList.remove('open'); document.getElementById('m-dr').classList.remove('open'); }
+
+function buildMenuMaint() {
+  const all = S.rooms
+    .flatMap(r => (r.maintenance_notes||[]).filter(n=>!n.resolved).map(n=>({...n,rn:r.name})))
+    .sort((a,b) => (a.priority==='urgente'?0:1)-(b.priority==='urgente'?0:1));
+  const bdg = document.getElementById('m-maint-bdg');
+  bdg.innerHTML = all.length ? `<span class="m-badge">${all.length}</span>` : '';
+  document.getElementById('m-maint-list').innerHTML = all.length
+    ? all.map(n=>`<div class="m-maint-item">
+        <div class="m-maint-dot ${n.priority}"></div>
+        <div><div class="m-maint-r">${n.rn}</div><div class="m-maint-t">${n.text}</div>
+        <div class="m-maint-d">${n.date} · ${n.priority}</div></div>
+      </div>`).join('')
+    : `<div style="padding:8px 18px;font-size:12.5px;color:var(--text3);">Sin problemas pendientes</div>`;
+}
+
+// ── Rooms modal ──────────────────────────────────────────
+function openRoomsModal() {
+  closeMenu();
+  // Set empty toggle state
+  const emptyTsw = document.getElementById('tsw-empty');
+  if (emptyTsw) emptyTsw.classList.toggle('on', S.showEmpty);
+  document.getElementById('rooms-tog-list').innerHTML = S.rooms.map(r => {
+    const on = !S.hidden.has(r.id);
+    return `<div class="tog-item">
+      <span class="tog-name">${r.name}</span>
+      <div class="tsw ${on?'on':''}" id="rts-${r.id}" onclick="togRoom(${r.id})"><div class="tsw-k"></div></div>
+    </div>`;
+  }).join('');
+  openModal('rooms-ov','rooms-box');
+}
+function closeRoomsModal() { closeModal('rooms-ov','rooms-box'); }
+
+function togShowEmpty() {
+  S.showEmpty = !S.showEmpty;
+  localStorage.setItem('cl_show_empty', S.showEmpty ? '1' : '0');
+  const sw = document.getElementById('tsw-empty');
+  if (sw) sw.classList.toggle('on', S.showEmpty);
+  renderAll();
+}
+
+function togRoom(id) {
+  if (S.hidden.has(id)) S.hidden.delete(id); else S.hidden.add(id);
+  localStorage.setItem('cl_h', JSON.stringify([...S.hidden]));
+  const sw = document.getElementById('rts-'+id);
+  if (sw) sw.classList.toggle('on', !S.hidden.has(id));
+  renderAll();
+}
+
+function showAllRooms() {
+  S.hidden.clear();
+  localStorage.setItem('cl_h','[]');
+  document.querySelectorAll('[id^="rts-"]').forEach(sw => sw.classList.add('on'));
+  renderAll();
+}
+
+// ── Cols modal ───────────────────────────────────────────
+function openColsModal() {
+  closeMenu();
+  document.getElementById('cols-opts').innerHTML = [2,3,4,5,6,7,8,9].map(n => `
+    <div class="col-opt ${S.cols===n?'active':''}" onclick="setCols(${n})">
+      <div class="col-opt-n">${n}</div>
+      <div class="col-opt-l">col${n===1?'':'s'}</div>
+    </div>`).join('');
+  openModal('cols-ov','cols-box');
+}
+function closeColsModal() { closeModal('cols-ov','cols-box'); }
+
+function setCols(n) {
+  S.cols = n;
+  localStorage.setItem('cl_cols', n);
+  applyCols();
+  applyTheme();
+  renderAll();
+  document.querySelectorAll('.col-opt').forEach(el => {
+    el.classList.toggle('active', parseInt(el.querySelector('.col-opt-n').textContent)===n);
+  });
+  document.getElementById('cols-desc').textContent = `${n} columna${n===1?'':'s'}`;
+}
+
+function applyTheme() {
+  document.body.classList.toggle('light', S.lightMode);
+  const btn = document.getElementById('theme-btn-label');
+  if (btn) btn.textContent = S.lightMode ? 'Modo oscuro' : 'Modo claro';
+  // theme-color meta
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = S.lightMode ? '#f5f5f7' : '#0f0f0f';
+}
+
+function toggleTheme() {
+  S.lightMode = !S.lightMode;
+  localStorage.setItem('cl_light', S.lightMode ? '1' : '0');
+  applyTheme();
+}
+
+function applyCols() {
+  document.documentElement.style.setProperty('--cols', S.cols);
+  const d = document.getElementById('cols-desc');
+  if (d) d.textContent = `${S.cols} columna${S.cols===1?'':'s'}`;
+}
+
+// ── Modal helpers ────────────────────────────────────────
+function openModal(ovId, boxId) {
+  document.getElementById(ovId).classList.add('open');
+  document.getElementById(boxId).classList.add('open');
+}
+function closeModal(ovId, boxId) {
+  document.getElementById(ovId).classList.remove('open');
+  document.getElementById(boxId).classList.remove('open');
+}
+
+// ── Day switch ───────────────────────────────────────────
+function switchDay(day) {
+  S.day = day;
+  document.getElementById('dy-hoy').classList.toggle('active', day==='hoy');
+  document.getElementById('dy-man').classList.toggle('active', day==='manana');
+  renderGrid();
+}
+
+// ── Logout ───────────────────────────────────────────────
+function doLogout() {
+  sessionStorage.removeItem(SK);
+  location.reload();
+}
+
+// ── Auto-refresh at midnight ────────────────────────────
+function scheduleRefreshAtMidnight() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 30, 0); // 00:00:30 next day
+  const ms = midnight - now;
+  setTimeout(() => {
+    // Reload cleanly so DS0/DS1 recalculate
+    location.reload();
+  }, ms);
+}
+scheduleRefreshAtMidnight();
+
+// ── Manual refresh button (pull-to-refresh feel) ─────────
+let lastRefresh = Date.now();
+async function manualRefresh() {
+  if (Date.now() - lastRefresh < 3000) return; // debounce
+  lastRefresh = Date.now();
+  toast('Actualizando…', 1500);
+  const [rr, ar] = await Promise.all([
+    db.from('rooms').select('*').order('id'),
+    db.from('reservations').select('*').or(`and(checkin.lte.${DS1},checkout.gte.${DS0})`)
+  ]);
+  if (rr.data) S.rooms = rr.data;
+  if (ar.data) S.reservations = ar.data.filter(r => r.status !== 'bloqueada');
+  renderAll(); buildMenuMaint();
+  toast('Actualizado ✓');
+  initRT(); // resubscribe
+}
+
+// ── Start ────────────────────────────────────────────────
+initApp();
+</script>
+</body>
+</html>
