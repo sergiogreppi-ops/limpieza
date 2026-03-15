@@ -633,14 +633,27 @@ const isDone = (res, ds) => { const i = tInfo(res,ds); return i ? i.done : false
 
 // ── PIN ──────────────────────────────────────────────────
 let pb = '';
-const SK = 'cl_ok_' + DS0;
+const SK = 'cl_session';
+const SESSION_MS = 28800000; // 8h
 
 async function initApp() {
   const { data } = await db.from('settings').select('value').eq('key','cleaning_pin').single();
   if (data?.value) S.pin = data.value.trim();
   document.getElementById('loading').classList.add('hidden');
-  if (sessionStorage.getItem(SK)) { await loadData(); }
-  else { document.getElementById('pin-screen').style.display = 'flex'; }
+  // Check localStorage session with expiry
+  const _sess = localStorage.getItem(SK);
+  if (_sess) {
+    const _exp = parseInt(_sess);
+    if (!isNaN(_exp) && Date.now() < _exp) {
+      await loadData();
+    } else {
+      localStorage.removeItem(SK); // expired
+      document.getElementById('pin-screen').style.display = 'flex';
+    }
+  } else {
+    document.getElementById('pin-screen').style.display = 'flex';
+  }
+
 }
 
 function updDots(err) {
@@ -654,7 +667,7 @@ function updDots(err) {
 
 async function checkPin() {
   if (pb === S.pin) {
-    sessionStorage.setItem(SK, '1');
+    localStorage.setItem(SK, String(Date.now() + SESSION_MS));
     document.getElementById('pin-screen').style.display = 'none';
     document.getElementById('loading').classList.remove('hidden');
     document.querySelector('.loading-text').textContent = 'Cargando habitaciones…';
@@ -1318,7 +1331,7 @@ function switchDay(day) {
 
 // ── Logout ───────────────────────────────────────────────
 function doLogout() {
-  sessionStorage.removeItem(SK);
+  localStorage.removeItem(SK);
   location.reload();
 }
 
