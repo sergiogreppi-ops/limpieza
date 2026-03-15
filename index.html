@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Limpieza"/>
 <meta name="theme-color" content="#0f0f0f"/>
+<link rel="manifest" href="manifest.json"/>
 <title>Limpieza</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -515,6 +516,11 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
 
 <div id="toast"></div>
 
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
 <script>
 // ── Config ──────────────────────────────────────────────
 const SB_URL = 'https://ozjqqgwcztuummvwpgfu.supabase.co';
