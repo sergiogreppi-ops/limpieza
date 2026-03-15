@@ -114,6 +114,7 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
 .day-tabs { display:flex; gap:5px; padding:8px 10px 0; flex-shrink:0; }
 .day-tab { flex:1; padding:7px 4px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r-xs); font-size:12px; font-weight:700; color:var(--text2); font-family:var(--font); cursor:pointer; transition:all .18s; text-align:center; }
 .day-tab.active { background:var(--accent); color:#0f0f0f; border-color:var(--accent); }
+#dy-man.active { background:var(--co); color:#0f0f0f; border-color:var(--co); }
 
 /* Content */
 .content { flex:1; overflow-y:auto; overflow-x:hidden; padding:10px 10px; padding-bottom:calc(20px + var(--sb)); -webkit-overflow-scrolling:touch; scrollbar-width:none; }
@@ -234,7 +235,6 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
 .m-scroll { flex:1; overflow-y:auto; scrollbar-width:none; }
 .m-scroll::-webkit-scrollbar { display:none; }
 .m-sec { padding:14px 18px 6px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text3); display:flex; align-items:center; gap:6px; }
-.m-badge { background:var(--danger); color:#fff; font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; font-family:var(--mono); }
 .m-btn { display:flex; align-items:center; gap:12px; padding:13px 18px; cursor:pointer; transition:background .12s; border:none; background:none; width:100%; text-align:left; font-family:var(--font); }
 .m-btn:active { background:var(--bg3); }
 .m-btn svg { width:16px; height:16px; color:var(--text2); flex-shrink:0; }
@@ -243,15 +243,6 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
 .m-btn.danger .m-btn-lbl { color:var(--danger); }
 .m-btn.danger svg { color:var(--danger); }
 .m-foot { border-top:1px solid var(--border); flex-shrink:0; }
-.m-maint-list { padding:0 18px; }
-.m-maint-item { display:flex; align-items:flex-start; gap:9px; padding:11px 0; border-bottom:1px solid var(--border); }
-.m-maint-item:last-child { border-bottom:none; }
-.m-maint-dot { width:7px; height:7px; border-radius:50%; margin-top:4px; flex-shrink:0; }
-.m-maint-dot.urgente { background:var(--danger); }
-.m-maint-dot.normal { background:var(--co); }
-.m-maint-r { font-size:12.5px; font-weight:700; }
-.m-maint-t { font-size:11.5px; color:var(--text2); margin-top:1px; line-height:1.4; }
-.m-maint-d { font-size:10px; color:var(--text3); font-family:var(--mono); margin-top:2px; }
 
 /* Modals */
 .modal-ov { display:none; position:fixed; inset:0; z-index:70; background:rgba(0,0,0,.72); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
@@ -318,12 +309,10 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
 .footer-stat.es  .footer-dot { background:var(--es); }
 .footer-stat.di  .footer-dot { background:var(--di); }
 .footer-stat.dn  .footer-dot { background:var(--accent); }
-.footer-stat.li  .footer-dot { background:var(--text3); }
 .footer-stat.co  { color:var(--co); }
 .footer-stat.es  { color:var(--es); }
 .footer-stat.di  { color:var(--di); }
 .footer-stat.dn  { color:var(--accent); }
-.footer-stat.li  { color:var(--text3); }
 .footer-sep { color:var(--text3); font-size:12px; }
 
 /* Saving overlay on tile */
@@ -453,13 +442,7 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:v
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       <div><div class="m-btn-lbl">Columnas de la grilla</div><div class="m-btn-sub" id="cols-desc">5 columnas</div></div>
     </button>
-    <div style="height:1px;background:var(--border);margin:6px 0;"></div>
-    <div class="m-sec">Mantenimiento pendiente <span id="m-maint-bdg"></span></div>
-    <div class="m-maint-list" id="m-maint-list"></div>
-    <button class="m-btn" onclick="openNewMaint()">
-      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      <div class="m-btn-lbl">Reportar nuevo problema</div>
-    </button>
+
   </div>
   <div class="m-foot">
     <button class="m-btn danger" onclick="doLogout()">
@@ -651,8 +634,7 @@ function showApp() {
   applyFontSize();
   applyTheme();
   renderAll();
-  buildMenuMaint();
-  initRT();
+    initRT();
   bindLongPress();
 }
 
@@ -703,7 +685,7 @@ function initRT() {
     .on('postgres_changes', { event:'UPDATE', schema:'public', table:'rooms' }, p => {
       const i = S.rooms.findIndex(r => r.id == p.new.id);
       if (i !== -1) S.rooms[i] = p.new;
-      renderAll(); buildMenuMaint();
+      renderAll();
     })
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
@@ -725,9 +707,9 @@ function renderFooter() {
   const ds = aDS();
   const entries = getEntries(ds);
 
-  let co=0, coD=0, es=0, esD=0, di=0, diD=0, done=0, libre=0;
+  let co=0, coD=0, es=0, esD=0, di=0, diD=0, done=0;
   entries.forEach(e => {
-    if (e.empty) { libre++; return; }
+    if (e.empty) { return; }
     const d = isDone(e.res, ds);
     if (d) done++;
     if (e.res && tInfo(e.res,ds)) {
@@ -750,10 +732,7 @@ function renderFooter() {
   if ((co||es||di) && done===co+es+di && done>0) {
     // all done — show accent
   }
-  if (libre && S.showEmpty) {
-    if (co||es||di) html += '<span class="footer-sep">·</span>';
-    html += `<div class="footer-stat li"><div class="footer-dot"></div>${libre} libre${libre!==1?'s':''}</div>`;
-  }
+
   bar.innerHTML = html || '<span style="font-size:10px;color:var(--text3);">Sin habitaciones</span>';
 }
 
@@ -795,7 +774,7 @@ function renderGrid() {
   if (ro) {
     html += `<div class="sec-lbl">Mañana <span class="ro-badge">solo lectura</span></div>`;
   } else {
-    html += `<div class="sec-lbl">Habitaciones <span>· ${doneCount}/${taskCount} listas</span></div>`;
+
   }
   html += `<div class="grid" id="room-grid">`;
   entries.forEach((e, i) => { html += buildTile(e, ds, ro); });
@@ -1013,11 +992,10 @@ async function submitMaint() {
   const { error } = await db.from('rooms').update({ maintenance_notes:notes }).eq('id', rid);
   if (error) { toast('Error ✕'); return; }
   room.maintenance_notes = notes;
-  closeSheet(); renderAll(); buildMenuMaint();
+  closeSheet(); renderAll();
   toast('Problema reportado ✓');
 }
 
-function openNewMaint() { closeMenu(); openMaintSheet(null); }
 
 // ── Mark / Unmark ────────────────────────────────────────
 async function doMark(resId) {
@@ -1118,20 +1096,7 @@ function closeSheet() { document.getElementById('sh-ov').classList.remove('open'
 function openMenu()  { document.getElementById('m-ov').classList.add('open');    document.getElementById('m-dr').classList.add('open'); }
 function closeMenu() { document.getElementById('m-ov').classList.remove('open'); document.getElementById('m-dr').classList.remove('open'); }
 
-function buildMenuMaint() {
-  const all = S.rooms
-    .flatMap(r => (r.maintenance_notes||[]).filter(n=>!n.resolved).map(n=>({...n,rn:r.name})))
-    .sort((a,b) => (a.priority==='urgente'?0:1)-(b.priority==='urgente'?0:1));
-  const bdg = document.getElementById('m-maint-bdg');
-  bdg.innerHTML = all.length ? `<span class="m-badge">${all.length}</span>` : '';
-  document.getElementById('m-maint-list').innerHTML = all.length
-    ? all.map(n=>`<div class="m-maint-item">
-        <div class="m-maint-dot ${n.priority}"></div>
-        <div><div class="m-maint-r">${n.rn}</div><div class="m-maint-t">${n.text}</div>
-        <div class="m-maint-d">${n.date} · ${n.priority}</div></div>
-      </div>`).join('')
-    : `<div style="padding:8px 18px;font-size:12.5px;color:var(--text3);">Sin problemas pendientes</div>`;
-}
+
 
 // ── Rooms modal ──────────────────────────────────────────
 function openRoomsModal() {
@@ -1306,7 +1271,7 @@ async function manualRefresh() {
   ]);
   if (rr.data) S.rooms = rr.data;
   if (ar.data) S.reservations = ar.data.filter(r => r.status !== 'bloqueada');
-  renderAll(); buildMenuMaint();
+  renderAll();
   toast('Actualizado ✓');
   initRT(); // resubscribe
 }
